@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>自習３ - ジェイコブの会計学習サイト</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.css">
+    <style>
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+        }
+        nav {
+            flex-shrink: 0;
+        }
+        .slideshow-wrapper {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+            background-color: #fff;
+        }
+        .reveal {
+            width: 100% !important;
+            height: 100% !important;
+        }
+        .reveal .slides section {
+            padding: 0;
+        }
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #666;
+            font-size: 1.2rem;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body>
+    <nav>
+        <div class="nav-container">
+            <h1 class="site-title">ジェイコブの会計学習サイト</h1>
+            <ul class="nav-menu">
+                <li><a href="index.html">ホーム</a></li>
+                <li><a href="jikoshoukai.html">自己紹介</a></li>
+                <li><a href="jishuu2.html">自習２</a></li>
+                <li><a href="jishuu3.html">自習３</a></li>
+                <li><a href="jishuu4.html">自習４</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="slideshow-wrapper">
+        <div id="loading">読み込み中...</div>
+        <div class="reveal">
+            <div class="slides" id="slides-container"></div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/reveal.js@5/dist/reveal.js"></script>
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc =
+            'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+
+        async function init() {
+            const slidesContainer = document.getElementById('slides-container');
+            const loading = document.getElementById('loading');
+
+            const pdf = await pdfjsLib.getDocument('data/自習３.pdf').promise;
+            const numPages = pdf.numPages;
+
+            // Get the natural slide dimensions from the first page
+            const firstPage = await pdf.getPage(1);
+            const naturalViewport = firstPage.getViewport({ scale: 1 });
+            const slideWidth = naturalViewport.width;
+            const slideHeight = naturalViewport.height;
+
+            // Render all pages at 2x for sharpness
+            for (let i = 1; i <= numPages; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 2 });
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                // CSS size matches reveal.js slide dimensions (reveal handles the fit scaling)
+                canvas.style.width = slideWidth + 'px';
+                canvas.style.height = slideHeight + 'px';
+
+                await page.render({ canvasContext: canvas.getContext('2d'), viewport }).promise;
+
+                const section = document.createElement('section');
+                section.appendChild(canvas);
+                slidesContainer.appendChild(section);
+            }
+
+            loading.style.display = 'none';
+
+            Reveal.initialize({
+                embedded: true,
+                width: slideWidth,
+                height: slideHeight,
+                margin: 0,
+                minScale: 0.1,
+                maxScale: 2,
+                controls: true,
+                progress: true,
+                keyboard: true,
+                center: true,
+                transition: 'slide'
+            });
+        }
+
+        init().catch(function(err) {
+            document.getElementById('loading').textContent = 'エラー: ' + err.message;
+            console.error(err);
+        });
+    </script>
+</body>
+</html>
