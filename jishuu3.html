@@ -73,7 +73,7 @@
             const slidesContainer = document.getElementById('slides-container');
             const loading = document.getElementById('loading');
 
-            const pdf = await pdfjsLib.getDocument('data/jishuu3.pdf').promise;
+            const pdf = await pdfjsLib.getDocument('jishuu3.pdf').promise;
             const numPages = pdf.numPages;
 
             // Get the natural slide dimensions from the first page
